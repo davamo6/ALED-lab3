@@ -5,6 +5,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -135,8 +136,19 @@ public class FASTAReader {
 	 * pattern when one has been found to be different.
 	 */
 	private boolean compareImproved(byte[] pattern, int position) throws FASTAException {
-		// TODO
-		return false;
+		//Lanzamos FASTAException si sobrepasa los datos válidos
+		if(position + pattern.length > validBytes) {
+			throw new FASTAException("Pattern goes beyond the end of the file");
+		}
+		//Comparamos los bytes del patrón uno a uno
+		for(int i = 0; i < pattern.length; i++) {
+			//Si encontramos cualquier byte distinto terminamos de inmediato y devolvemos un false
+			if(pattern[i] != content[position + i]) {
+				return false;
+			}
+		}
+		//Si se completó todo el bucle sin encontrar diferencias, el patrón coincide y devolvemos true
+		return true;
 	}
 
 	/*
@@ -162,8 +174,22 @@ public class FASTAReader {
 	 *         pattern in the data.
 	 */
 	public List<Integer> search(byte[] pattern) {
-		// TODO
-		return null;
+		List<Integer> posiciones = new ArrayList<>();
+		//Iniciamos el índice i en 0 y avanzamos de uno en uno
+		for(int i = 0; ; i++) {
+			try {
+				//Evaluamos si el patrón coincide en la posición actual i
+				boolean coincidencia = compareImproved(pattern,i);
+				if(coincidencia) {
+					posiciones.add(i);
+				}
+			} catch (FASTAException e) {
+				// Cuando la búsqueda excede los datos válidos, 'compare' lanza esta excepción.
+	            // La capturamos para romper el bucle y finalizar la búsqueda de forma limpia.
+				break;
+			}
+		}
+		return posiciones;
 	}
 
 	/**
